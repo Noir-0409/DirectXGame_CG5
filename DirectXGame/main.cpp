@@ -5,9 +5,6 @@
 
 using namespace KamataEngine;
 
-// 関数プロトタイプ宣言
-ID3DBlob* CompileShader(const std::wstring& filePath, const std::string& shaderModel);
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
@@ -75,16 +72,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	vs.Load(L"Resources/shaders/TestVS.hlsl", "vs_5_0");
 	assert(vs.GetBlob() != nullptr);
 
-	// ID3DBlob* vsBlob = CompileShader(L"Resources/shaders/TestVS.hlsl", "vs_5_0");
-	// assert(vsBlob != nullptr);
-
 	// ピクセルシェーダの読み込みとコンパイル
 	Shader ps;
 	ps.Load(L"Resources/shaders/TestPS.hlsl", "ps_5_0");
 	assert(ps.GetBlob() != nullptr);
-
-	// ID3DBlob* psBlob = CompileShader(L"Resources/shaders/TestPS.hlsl", "ps_5_0");
-	// assert(psBlob != nullptr);
 
 	// PSO(PipelineStateObject)の設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
