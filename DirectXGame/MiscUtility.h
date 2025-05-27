@@ -6,4 +6,4 @@
 std::wstring ConvertString(const std::string& str);
 
 //文字列変換
-std::string COnvertString(const std::wstring& str);
+std::string ConvertString(const std::wstring& str);
