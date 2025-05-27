@@ -120,4 +120,5 @@ Shader::~Shader() {
 		dxcBlob_->Release();
 		dxcBlob_ = nullptr;
 	}
+
 }
