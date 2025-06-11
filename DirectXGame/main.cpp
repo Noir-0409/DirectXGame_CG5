@@ -51,12 +51,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	};
 
-	VertexData vertices[] = {
-
-	    {0.0f,  0.5f,  0.0f, 1.0f},
-        {0.5f,  -0.5f, 0.0f, 1.0f},
-        {-0.5f, -0.5f, 0.0f, 1.0f}
+VertexData vertices[] = {
+	    {{-1.0f, -1.0f, 0.0f, 1.0f}}, 
+	    {{-1.0f, 3.0f, 0.0f, 1.0f}},  
+	    {{3.0f, -1.0f, 0.0f, 1.0f}},  
 	};
+
 
 	VertexBuffer vb;
 	vb.Create(sizeof(vertices), sizeof(vertices[0]));
