@@ -1,16 +1,10 @@
-struct VertexShaderOutput
-{
-    
-    float32_t4 position : SV_POSITION;
-    float2 texcoord : TEXCOORD0;
-    
-};
+#include "Test.hlsli"
 
 struct VertexShaderInput
 {
     
     float32_t4 position : POSITION0;
-    float2 texcoord : TEXCOORD0;
+    float32_t2 texcoord : TEXCOORD0;
     
 };
 

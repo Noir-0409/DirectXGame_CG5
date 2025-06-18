@@ -1,3 +1,5 @@
+#include "Test.hlsli"
+
 struct PixelShaderOutput
 {
     
@@ -5,11 +7,12 @@ struct PixelShaderOutput
     
 };
 
-PixelShaderOutput main()
+PixelShaderOutput main(VertexShaderOutput input)
 {
     
     PixelShaderOutput output;
-    output.color = float32_t4(1.0f, 1.0f, 1.0f, 1.0f);
+    float32_t2 uv = input.texcoord;
+    output.color = float32_t4(uv.x, uv.y, 1.0f, 1.0f);
     return output;
     
 }
