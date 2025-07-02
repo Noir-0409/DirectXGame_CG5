@@ -1,16 +1,23 @@
+#include "IndexBuffer.h"
 #include "KamataEngine.h"
+#include "PipelineState.h"
+#include "RootSignature.h"
 #include "Shader.h"
+#include "VertexBuffer.h"
 #include <Windows.h>
 #include <d3dcompiler.h>
-#include "RootSignature.h"
-#include "PipelineState.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
 
 using namespace KamataEngine;
 
-//関数プロトタイプ宣言
+// 関数プロトタイプ宣言
+// PipelineStateObjectの生成
 void SetupPipelineState(PipelineState& pipelineState, RootSignature& rs, Shader& vs, Shader& ps);
+
+// RenderTextureResourceの生成
+ID3D12Resource* CreateRenderTextureResource(ID3D12Device* device, uint32_t width, uint32_t height, DXGI_FORMAT format, const FLOAT* clearColor);
+
+//DepthStencilTextureResourceの生成
+ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height);
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
@@ -49,10 +56,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		Vector4 position;
 		Vector2 texcoord;
-
 	};
 
-VertexData vertices[] = {
+	VertexData vertices[] = {
 	    {{-1.0f, -1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
 	    {{-1.0f, 3.0f, 0.0f, 1.0f},  {1.0f, 0.0f}},
 	    {{3.0f, -1.0f, 0.0f, 1.0f},  {1.0f, 0.0f}},
@@ -65,11 +71,10 @@ VertexData vertices[] = {
 	vb.Get()->Map(0, nullptr, reinterpret_cast<void**>(&pGpuVertices));
 
 	for (int i = 0; i < _countof(vertices); ++i) {
-	
-	pGpuVertices[i] = vertices[i];
 
+		pGpuVertices[i] = vertices[i];
 	}
-		
+
 	uint16_t indices[] = {
 
 	    0, 1, 2
@@ -83,10 +88,37 @@ VertexData vertices[] = {
 	ib.Get()->Map(0, nullptr, reinterpret_cast<void**>(&pGpuIndices));
 
 	for (int i = 0; i < _countof(indices); ++i) {
-	
-	pGpuIndices[i] = indices[i];
-	
+
+		pGpuIndices[i] = indices[i];
 	}
+
+	//Resource生成、Heap生成、View生成で再利用される変数の準備
+	ID3D12Device* device = dxCommon->GetDevice();
+	HRESULT hr;
+
+	//RenderTextureResourceの作成
+	//画面クリア色
+	const FLOAT kRenderTargetClearColor[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+
+	ID3D12Resource* renderTextureResource = CreateRenderTextureResource(device, WinApp::kWindowWidth, WinApp::kWindowHeight, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, kRenderTargetClearColor);
+
+	//1,RTV用のDescriptorHeapを作成する
+	ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
+
+	D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc{};
+	rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvDescriptorHeapDesc.NumDescriptors = 1;
+
+	hr = device->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
+	assert(SUCCEEDED(hr));
+
+	//CPU側から見たHANDLEを取得しておく
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleCPU = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+	//2,RTV用のViewの作成
+	device->CreateRenderTargetView(renderTextureResource, nullptr, rtvHandleCPU);
+
+
 
 	// メインループ
 	while (true) {
@@ -102,7 +134,7 @@ VertexData vertices[] = {
 
 		// コマンドを詰む
 		commandList->SetGraphicsRootSignature(rs.Get());     // RootSignatureの設定
-		commandList->SetPipelineState(pipelineState.Get());     // PSOの設定
+		commandList->SetPipelineState(pipelineState.Get());  // PSOの設定
 		commandList->IASetVertexBuffers(0, 1, vb.GetView()); // VBVの設定
 		commandList->IASetIndexBuffer(ib.GetView());
 
@@ -115,7 +147,7 @@ VertexData vertices[] = {
 		// 描画終了
 		dxCommon->PostDraw();
 	}
-	
+
 	// エンジンの終了処理
 	KamataEngine::Finalize();
 
@@ -162,7 +194,7 @@ void SetupPipelineState(PipelineState& pipelineState, RootSignature& rs, Shader&
 	graphicsPipelineStateDesc.BlendState = blendDesc;           // BlendState
 	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc; // RasterizerState
 
-		// 書き込むRTVの情報
+	// 書き込むRTVの情報
 	graphicsPipelineStateDesc.NumRenderTargets = 1; // 1つのRTVに書き込む
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
@@ -174,4 +206,78 @@ void SetupPipelineState(PipelineState& pipelineState, RootSignature& rs, Shader&
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 
 	pipelineState.Create(graphicsPipelineStateDesc);
+}
+
+ID3D12Resource* CreateRenderTextureResource(ID3D12Device* device, uint32_t width, uint32_t height, DXGI_FORMAT format, const FLOAT* clearColor) {
+
+	// 1,生成するRenderTextureのDescの設定
+	D3D12_RESOURCE_DESC resourceDesc{};
+	resourceDesc.Width = UINT(width);
+	resourceDesc.Height = UINT(height);
+	resourceDesc.MipLevels = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+	// 2,利用するHeapの設定
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+	// 3,ClaarValueの用意
+	D3D12_CLEAR_VALUE clearValue;
+	clearValue.Format = format;
+	clearValue.Color[0] = clearColor[0];
+	clearValue.Color[1] = clearColor[1];
+	clearValue.Color[2] = clearColor[2];
+	clearValue.Color[3] = clearColor[3];
+
+	// 4,RenderTextureResourceの生成
+	ID3D12Resource* resource = nullptr;
+	HRESULT hr = device->CreateCommittedResource(
+	    &heapProperties, 
+		D3D12_HEAP_FLAG_NONE, 
+		&resourceDesc, 
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, 
+		&clearValue,
+		IID_PPV_ARGS(&resource)
+	);
+
+	assert(SUCCEEDED(hr));
+
+	return resource;
+
+}
+
+ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height) { 
+
+	//1,生成するDepthStencilTextureのDescの設定
+	D3D12_RESOURCE_DESC resourceDesc{};
+	resourceDesc.Width = width;
+	resourceDesc.Height = height;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	//2,利用するHeapの設定
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+	//深度値のクリア設定
+	D3D12_CLEAR_VALUE depthClearValue{};
+	depthClearValue.DepthStencil.Depth = 1.0f;
+	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+
+	//3,Resourceの生成
+	ID3D12Resource* resource = nullptr;
+	HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthClearValue, IID_PPV_ARGS(&resource));
+
+	assert(SUCCEEDED(hr));
+
+	return resource;
+
 }
