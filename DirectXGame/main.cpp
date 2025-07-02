@@ -193,6 +193,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		dxCommon->PostDraw();
 	}
 
+	//解放
+	renderTextureResource->Release();
+	srvDescriptorHeap->Release();
+	rtvDescriptorHeap->Release();
+	depthStencilResource->Release();
+	dsvDescriptorHeap->Release();
+
 	// エンジンの終了処理
 	KamataEngine::Finalize();
 
