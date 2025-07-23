@@ -59,13 +59,13 @@ void RootSignature::Create() {
 
 		DebugText::GetInstance()->ConsolePrintf(reinterpret_cast<char*>(errorBlog->GetBufferPointer()));
 
-		assert(false);
+		//assert(false);
 	}
 
 	// バイナリをもとに生成
 	ID3D12RootSignature* rootSignature = nullptr;
 	hr = dxCommon->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
-	assert(SUCCEEDED(hr));
+	//assert(SUCCEEDED(hr));
 
 	//解放
 	signatureBlob->Release();

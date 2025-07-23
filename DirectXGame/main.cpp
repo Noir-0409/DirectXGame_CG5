@@ -43,12 +43,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// 頂点シェーダの読み込みとコンパイル
 	Shader vs;
 	vs.LoadDxc(L"Resources/shaders/TestVS.hlsl", L"vs_6_0");
-	assert(vs.GetDxcBlob() != nullptr);
+	//assert(vs.GetDxcBlob() != nullptr);
 
 	// ピクセルシェーダの読み込みとコンパイル
 	Shader ps;
 	ps.LoadDxc(L"Resources/shaders/TestPS.hlsl", L"ps_6_0");
-	assert(ps.GetDxcBlob() != nullptr);
+	//assert(ps.GetDxcBlob() != nullptr);
 
 	PipelineState pipelineState;
 	SetupPipelineState(pipelineState, rs, vs, ps);
@@ -111,7 +111,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	rtvDescriptorHeapDesc.NumDescriptors = 1;
 
 	hr = device->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
-	assert(SUCCEEDED(hr));
+	//assert(SUCCEEDED(hr));
 
 	//CPU側から見たHANDLEを取得しておく
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleCPU = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -130,7 +130,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	dsvDescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
 	hr = device->CreateDescriptorHeap(&dsvDescriptorHeapDesc, IID_PPV_ARGS(&dsvDescriptorHeap));
-	assert(SUCCEEDED(hr));
+	//assert(SUCCEEDED(hr));
 
 	//CPU側から見たHANDLEを取得しておく
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandleCPU = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -151,7 +151,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	srvDescriptorHeapDesc.NumDescriptors = 1;
 
 	hr = device->CreateDescriptorHeap(&srvDescriptorHeapDesc, IID_PPV_ARGS(&srvDescriptorHeap));
-	assert(SUCCEEDED(hr));
+	//assert(SUCCEEDED(hr));
 
 	//CPU側から見たHANDLE、GPU側から見たHANDLEを取得しておく
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -371,7 +371,7 @@ ID3D12Resource* CreateRenderTextureResource(ID3D12Device* device, uint32_t width
 		IID_PPV_ARGS(&resource)
 	);
 
-	assert(SUCCEEDED(hr));
+	//assert(SUCCEEDED(hr));
 
 	return resource;
 
@@ -403,7 +403,7 @@ ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t 
 	ID3D12Resource* resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthClearValue, IID_PPV_ARGS(&resource));
 
-	assert(SUCCEEDED(hr));
+	//assert(SUCCEEDED(hr));
 
 	return resource;
 

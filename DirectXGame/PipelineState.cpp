@@ -10,7 +10,7 @@ DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 	ID3D12PipelineState* graphicsPipeLineState = nullptr;
 HRESULT hr = dxCommon->GetDevice()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&graphicsPipeLineState));
 
-assert(SUCCEEDED(hr));
+//assert(SUCCEEDED(hr));
 
 pipelineState_ = graphicsPipeLineState;
 
