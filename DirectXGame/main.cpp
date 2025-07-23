@@ -370,7 +370,7 @@ ID3D12Resource* CreateRenderTextureResource(ID3D12Device* device, uint32_t width
 		&clearValue,
 		IID_PPV_ARGS(&resource)
 	);
-
+	hr;
 	//assert(SUCCEEDED(hr));
 
 	return resource;
@@ -402,7 +402,7 @@ ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t 
 	//3,Resourceの生成
 	ID3D12Resource* resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthClearValue, IID_PPV_ARGS(&resource));
-
+	hr;
 	//assert(SUCCEEDED(hr));
 
 	return resource;
