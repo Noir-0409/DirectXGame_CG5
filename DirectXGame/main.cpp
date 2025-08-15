@@ -61,8 +61,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	VertexData vertices[] = {
 	    {{-1.0f, -1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-	    {{-1.0f, 3.0f, 0.0f, 1.0f},  {1.0f, 0.0f}},
-	    {{3.0f, -1.0f, 0.0f, 1.0f},  {1.0f, 0.0f}},
+	    {{-1.0f, 1.0f, 0.0f, 1.0f},  {0.0f, 0.0f}},
+	    {{1.0f, -1.0f, 0.0f, 1.0f},  {1.0f, 1.0f}},
+	    {{1.0f, 1.0f, 0.0f, 1.0f},   {1.0f, 0.0f}},
 	};
 
 	VertexBuffer vb;
@@ -77,9 +78,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	}
 
 	uint16_t indices[] = {
-
-	    0, 1, 2
-
+	    0, 1, 2, 
+	    2, 1, 3  
 	};
 
 	IndexBuffer ib;
